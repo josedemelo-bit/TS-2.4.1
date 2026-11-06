@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tactical Strike — Web FPS</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101820;color:#fff;font-family:Inter,system-ui,Arial}
+#game{position:fixed;inset:0}canvas{display:block}
+#menu{overflow:auto;padding:20px 0;position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(120deg,rgba(6,13,20,.95),rgba(10,29,42,.72));z-index:5}
+.panel{max-height:95vh;overflow:auto;width:min(520px,92vw);padding:28px;border:1px solid #557184;border-radius:18px;background:rgba(12,24,34,.92);box-shadow:0 20px 80px #0008}
+h1{margin:0 0 8px;font-size:32px;letter-spacing:2px}h1 span{color:#ffb52e}.sub{color:#b9c8d2;line-height:1.5}
+button,input{font:inherit;border-radius:9px;border:1px solid #496170;padding:12px;background:#162b39;color:#fff}
+button{cursor:pointer;background:#ffb52e;border:0;color:#18212a;font-weight:800}button:hover{filter:brightness(1.08)}button:disabled{opacity:.4;cursor:not-allowed;filter:none}
+.row{display:flex;gap:10px;margin-top:14px}.row>*{flex:1;min-width:0}label{display:block;margin-top:14px;color:#c5d3dc;font-size:13px}
+#musicControls{margin-top:18px;padding:12px;border:1px solid #496170;border-radius:12px;background:#0b172577}#musicControls .musicRow{display:flex;align-items:center;gap:10px;margin-top:8px}#musicControls button{padding:8px 10px;font-size:12px}#musicVolume{width:100%;padding:0;accent-color:#ffb52e}#trackName{font-size:12px;color:#d7e4ec;overflow-wrap:anywhere}#hudMusic{position:absolute;top:70px;right:16px;pointer-events:auto;display:flex;gap:8px;align-items:center;background:#0b1725d9;border:1px solid #8196a655;border-radius:10px;padding:8px 10px;text-shadow:none}#hudMusic button{padding:7px 9px;font-size:11px}#hudMusic input{width:85px;padding:0;accent-color:#ffb52e}#returnMenu{background:#d7e4ec;color:#18212a}
+#hud{position:fixed;inset:0;pointer-events:none;display:none;text-shadow:0 2px 5px #000}
+#top{position:absolute;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:18px;align-items:center;padding:10px 18px;background:#0b1725bb;border:1px solid #8196a655;border-radius:12px;font-weight:800}
+#status{position:absolute;top:16px;left:16px;background:#0b1725bb;padding:10px 12px;border-radius:10px;color:#c8d6df;font-size:13px}
+#stats{position:absolute;bottom:20px;left:20px;display:flex;gap:12px}
+.stat{background:#0b1725d9;border:1px solid #8196a655;padding:12px 16px;border-radius:10px;min-width:100px}.num{font-size:24px;font-weight:900}.small{font-size:11px;letter-spacing:1px;color:#a9bdca}
+#weapon{position:absolute;bottom:24px;right:24px;text-align:right;background:#0b1725d9;border:1px solid #8196a655;padding:12px 16px;border-radius:10px}
+#crosshair{position:absolute;left:50%;top:50%;width:18px;height:18px;transform:translate(-50%,-50%)}
+#crosshair:before,#crosshair:after{content:"";position:absolute;background:#eaffff;box-shadow:0 0 5px #66dfff}
+#crosshair:before{width:2px;height:18px;left:8px}#crosshair:after{height:2px;width:18px;top:8px}
+#hint{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:#e0e8ee;background:#0b1725aa;padding:8px 12px;border-radius:8px;font-size:12px}
+#toast{position:absolute;top:76px;left:50%;transform:translateX(-50%);font-weight:800;color:#ffcf67}
+#hit{position:absolute;left:50%;top:50%;width:28px;height:28px;transform:translate(-50%,-50%);opacity:0}
+#hit:before,#hit:after{content:"";position:absolute;left:13px;top:0;width:2px;height:28px;background:#ffb52e}#hit:after{transform:rotate(90deg)}
+@media(max-width:600px){#stats{left:8px;bottom:8px;gap:5px}.stat{padding:7px;min-width:72px}.num{font-size:18px}#weapon{right:8px;bottom:8px;padding:7px}#hint{display:none}}
+
+#matchPanel{position:absolute;top:120px;left:16px;pointer-events:auto;width:260px;background:#101d2bea;border:1px solid #536878;padding:14px;border-radius:12px;font-size:13px}#matchPanel button{padding:9px;margin-top:8px;width:100%}#roster{white-space:pre-line;line-height:1.8;margin:10px 0}#roundBanner{position:absolute;top:75px;left:50%;transform:translateX(-50%);text-align:center;font-weight:800;font-size:16px;background:#101d2bd9;padding:10px 18px;border-radius:8px;max-width:45%}#toast{top:132px}#shop{margin-top:12px;border-top:1px solid #536878;padding-top:10px}#buyHint{position:absolute;left:20px;top:85px;font-size:12px;color:#e9bf7b}
+</style>
+</head>
+<body>
+<div id="game"></div>
+<div id="menu"><div class="panel">
+<h1>TACTICAL <span>STRIKE</span></h1>
+<p class="sub">FPS tático 3D para navegador. Treine contra bots ou entre em uma sala online com amigos. BOPE · Rio de Janeiro e Vila do Chaves · 2v2.</p>
+<p><a href="/personagens.html" style="color:#ffb52e">Conhecer os personagens do BOPE →</a></p><label>Seu nome</label><input id="playerName" maxlength="16" placeholder="Operador" value="Operador" style="width:100%">
+<label for="mapSelect">Mapa</label><select id="mapSelect" style="width:100%;padding:12px;background:#162b39;color:white;border-radius:9px"><option value="rio">Rio de Janeiro · cs_rio</option><option value="chaves">Vila do Chaves · de_chaves3.0</option></select><p id="mapStatus" role="status">Carregando personagens do BOPE e mapa…</p><label>Modo de jogo</label><div class="row"><button id="soloBtn" disabled>TREINO COM BOTS</button><button id="onlineBtn" disabled>2v2 ONLINE</button></div>
+<label>Código da sala (igual para os quatro amigos)</label><input id="roomCode" maxlength="16" value="AMIGOS" style="width:100%"><p class="sub" style="font-size:12px">2v2 por eliminação · primeiro a 5 rounds · 20s de compra · rounds de 90s. Cada round começa com pistola e faca; créditos acumulam. Sem Spike nesta versão.</p><label>Servidor online (para multiplayer)</label><input id="serverUrl" placeholder="http://localhost:3000" value="" style="width:100%">
+<p class="sub" style="font-size:12px">Controles: WASD mover · mouse mirar · clique atirar · Shift correr · Espaço pular · R recarregar · Esc soltar o mouse.</p>
+<div id="musicControls"><strong>♫ MÚSICA</strong><div class="musicRow"><button id="musicToggle" type="button">MÚSICA: LIGADA</button><span id="trackName">Clique para ativar o áudio</span></div><label for="musicVolume">Volume</label><input id="musicVolume" type="range" min="0" max="100" value="35"><label for="musicFiles">Suas músicas (MP3)</label><input id="musicFiles" type="file" accept=".mp3,audio/mpeg" multiple style="width:100%">
+<p class="sub" style="font-size:12px">Escolha uma ou várias músicas. Elas tocam só no seu navegador, no menu e na partida. Selecione novamente ao reabrir a página.</p>
+<select id="musicList" aria-label="Escolher música" style="width:100%;padding:8px;background:#162b39;color:white"></select>
+<div class="row"><button id="previousTrack" type="button">⏮ Anterior</button><button id="nextTrack" type="button">Próxima ⏭</button><button id="clearTracks" type="button">Limpar</button></div>
+<p id="musicNotice" role="status" style="font-size:12px;color:#b9c8d2">Nenhum MP3 selecionado.</p></div>
+</div></div>
+<div id="hud">
+<div id="status">MODO TREINO · 3D</div>
+<div id="hudMusic"><button id="hudMusicToggle" type="button">♫ ON</button><input id="hudMusicVolume" aria-label="Volume da música" type="range" min="0" max="100" value="35"><button id="returnMenu" type="button">MENU</button></div>
+<div id="top"><span style="color:#ffb52e">ALPHA</span><span id="score">0 — 0</span><span style="color:#6ecbff">BRAVO</span><span id="clock">00:00</span></div>
+<div id="roundBanner" hidden></div><div id="buyHint" hidden>B · LOJA / TAB · PLACAR</div>
+<div id="matchPanel" hidden><strong id="roomLabel">SALA 2v2</strong><div id="roster"></div><div id="credits"></div><button id="readyBtn">PRONTO</button><div id="shop" hidden><strong>COMPRA · B para fechar</strong><button id="buyRifle">VX-9 · 1.600 créditos</button><button id="buyArmor">COLETE 50 · 400 créditos</button><p>2 · pistola gratuita<br>3 · faca gratuita</p></div></div>
+<div id="crosshair"></div><div id="hit"></div><div id="toast"></div>
+<div id="stats"><div class="stat"><div class="small">VIDA</div><div class="num" id="health">100</div></div><div class="stat"><div class="small">COLETE</div><div class="num" id="armor">100</div></div></div>
+<div id="weapon"><div class="small">ARMA ATUAL</div><div class="num" id="weaponName">VX-9</div><div><span id="ammo">30</span> / <span id="reserve">90</span></div></div>
+<div id="hint">1 rifle · 2 pistola · 3 faca · R recarregar · B comprar · TAB placar · ESC mouse</div>
+</div>
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {createOperator,animateOperator,loadOperators,setOperatorWeapon,setOperatorTeam,disposeOperator} from './characters.js';
+import {createWeapons} from './weapons.js';
+import {Octree} from 'three/addons/math/Octree.js';
+import {Capsule} from 'three/addons/math/Capsule.js';
+
+const $=id=>document.getElementById(id);
+
+// MP3 files stay in this browser tab; no file upload or socket transmission.
+const musicAudio=new Audio();musicAudio.preload='metadata';musicAudio.volume=.35;
+let tracks=[],trackIndex=-1,musicEnabled=true,musicUnlocked=false;
+function syncMusicControls(){
+ $('musicToggle').textContent=musicEnabled?'MÚSICA: LIGADA':'MÚSICA: DESLIGADA';
+ $('hudMusicToggle').textContent=musicEnabled?'♫ ON':'♫ OFF';
+ $('musicVolume').value=$('hudMusicVolume').value=Math.round(musicAudio.volume*100);
+ $('musicList').value=String(trackIndex);
+ for(const id of ['previousTrack','nextTrack','clearTracks','musicList'])$(id).disabled=!tracks.length;
+}
+function playCurrent(){
+ if(!musicEnabled||!musicUnlocked||!tracks.length)return;
+ musicAudio.play().catch(error=>{if(error.name!=='AbortError')$('musicNotice').textContent='Não foi possível tocar. Confira o MP3 e tente outra faixa.';});
+}
+function chooseTrack(index){
+ if(!tracks.length)return;
+ trackIndex=(index+tracks.length)%tracks.length;musicAudio.src=tracks[trackIndex].url;
+ $('trackName').textContent='♫ '+tracks[trackIndex].name;syncMusicControls();playCurrent();
+}
+function clearTracks(){
+ musicAudio.pause();musicAudio.removeAttribute('src');musicAudio.load();
+ tracks.forEach(track=>URL.revokeObjectURL(track.url));tracks=[];trackIndex=-1;
+ $('musicList').replaceChildren();$('trackName').textContent='Escolha seus arquivos MP3';
+ $('musicNotice').textContent='Nenhum MP3 selecionado.';syncMusicControls();
+}
+function unlockMusic(){musicUnlocked=true;playCurrent();}
+function setMusicMode(){ /* User playlist continues across menu/game transitions. */ }
+function toggleMusic(){musicUnlocked=true;musicEnabled=!musicEnabled;if(musicEnabled)playCurrent();else musicAudio.pause();syncMusicControls();}
+$('musicFiles').addEventListener('change',e=>{
+ const selected=Array.from(e.target.files||[]),accepted=selected.filter(f=>/\.mp3$/i.test(f.name)&&f.size>0);
+ if(!accepted.length){$('musicNotice').textContent='Escolha arquivos MP3 válidos.';return;}
+ clearTracks();tracks=accepted.map(f=>({name:f.name,url:URL.createObjectURL(f)}));
+ tracks.forEach((t,i)=>{const option=document.createElement('option');option.value=i;option.textContent=t.name;$('musicList').append(option);});
+ musicUnlocked=true;$('musicNotice').textContent=tracks.length+' música(s) selecionada(s). Os arquivos ficam apenas neste navegador.'+(accepted.length<selected.length?' Arquivos inválidos foram ignorados.':'');
+ chooseTrack(0);e.target.value='';
+});
+$('musicList').addEventListener('change',e=>{musicUnlocked=true;chooseTrack(Number(e.target.value));});
+$('previousTrack').onclick=()=>chooseTrack(trackIndex-1);$('nextTrack').onclick=()=>chooseTrack(trackIndex+1);
+$('clearTracks').onclick=clearTracks;
+$('musicToggle').onclick=$('hudMusicToggle').onclick=toggleMusic;
+for(const id of ['musicVolume','hudMusicVolume'])$(id).oninput=e=>{musicAudio.volume=Math.max(0,Math.min(1,Number(e.target.value)/100));syncMusicControls();};
+musicAudio.addEventListener('ended',()=>chooseTrack(trackIndex+1));
+musicAudio.addEventListener('error',()=>{if(tracks.length)$('musicNotice').textContent='Este MP3 não pôde ser lido. Escolha outra faixa na lista.';});
+document.addEventListener('pointerdown',()=>{if(!musicUnlocked)unlockMusic();},{once:true});
+window.addEventListener('beforeunload',()=>tracks.forEach(t=>URL.revokeObjectURL(t.url)));
+clearTracks();
+
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x91a6b2);scene.fog=new THREE.Fog(0x91a6b2,100,220);
+const camera=new THREE.PerspectiveCamera(78,innerWidth/innerHeight,.1,160);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
+$('game').appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xd9efff,0x37414a,2.0));
+const sun=new THREE.DirectionalLight(0xffe2b4,3.0);sun.position.set(-14,25,8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-45;sun.shadow.camera.right=45;sun.shadow.camera.top=45;sun.shadow.camera.bottom=-45;scene.add(sun);
+const mat=(c,r=.8,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+const concrete=mat(0x6d777b), dark=mat(0x303a40), crate=mat(0x9a7951), stripe=mat(0xe7aa39), floorMat=mat(0x65716e);
+const targets=[],bots=[],remotePlayers=new Map(),mapMeshes=[];
+let worldOctree=null,mapReady=false,spawnPoints=[],spawnCursor=0,mapId='rio',mapName='cs_rio',mapTextures=[];
+const mapRoot=new THREE.Group();scene.add(mapRoot);
+const mapRay=new THREE.Raycaster();
+function occluded(from,to){const direction=to.clone().sub(from);const distance=direction.length();mapRay.set(from,direction.normalize());mapRay.far=distance;return mapRay.intersectObjects(mapMeshes,false).some(h=>h.distance<distance-.08);}
+function enemySpawn(i=0){const points=spawnPoints.filter((p,index)=>(p.team??(index<16?0:1))===1);return new THREE.Vector3(...(points[i%points.length]||spawnPoints[0]).position);}
+function spawnPosition(index=0){return new THREE.Vector3(...spawnPoints[index%spawnPoints.length].position);}
+function placePlayer(){const point=spawnPoints[0];camera.position.copy(spawnPosition()).add(new THREE.Vector3(0,1.65,0));yaw=point.yaw;pitch=0;camera.rotation.order='YXZ';camera.rotation.set(0,yaw,0);verticalSpeed=0;}
+function capsuleAt(eye){return new Capsule(new THREE.Vector3(eye.x,eye.y-1.30,eye.z),new THREE.Vector3(eye.x,eye.y-.35,eye.z),.35);}
+function resolveCapsule(capsule){let grounded=false;for(let i=0;i<4;i++){const hit=worldOctree.capsuleIntersect(capsule);if(!hit)break;grounded ||= hit.normal.y>.5;capsule.translate(hit.normal.multiplyScalar(hit.depth+.00001));}return grounded;}
+function walk(eye,dx,dz,dy=0){
+ const capsule=capsuleAt(eye),old=capsule.clone();capsule.translate(new THREE.Vector3(dx,0,dz));
+ const hit=worldOctree.capsuleIntersect(capsule);
+ if(hit&&Math.abs(hit.normal.y)<.5&&(dx||dz)){
+  const step=old.clone();step.translate(new THREE.Vector3(0,.45,0));
+  if(!worldOctree.capsuleIntersect(step)){
+   step.translate(new THREE.Vector3(dx,0,dz));
+   if(!worldOctree.capsuleIntersect(step)){step.translate(new THREE.Vector3(0,-.45,0));resolveCapsule(step);capsule.copy(step);}
+  }
+ }
+ resolveCapsule(capsule);capsule.translate(new THREE.Vector3(0,dy,0));const ground=resolveCapsule(capsule);
+ eye.copy(capsule.end).add(new THREE.Vector3(0,.35,0));return ground;
+}
+async function loadMap(){
+ mapReady=false;gameSession++;$('mapSelect').disabled=$('soloBtn').disabled=$('onlineBtn').disabled=true;$('mapStatus').textContent='Carregando mapa e personagens…';
+ for(const bot of bots){scene.remove(bot);disposeOperator(bot);}bots.length=targets.length=0;mapRoot.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose();}});mapRoot.clear();mapMeshes.length=0;mapTextures.forEach(t=>t?.dispose());mapTextures=[];if(scene.background?.isTexture)scene.background.dispose();scene.background=new THREE.Color(0x91a6b2);worldOctree=null;spawnCursor=0;
+ try{
+  await loadOperators();
+  const response=await fetch('/maps/'+mapId+'/map.json');if(!response.ok)throw new Error('map.json não encontrado');const data=await response.json();spawnPoints=data.spawns;mapName=data.name;
+  const loader=new THREE.TextureLoader();
+  const textures=mapTextures=await Promise.all(data.textures.map(async t=>{if(!t.url)return null;const texture=await loader.loadAsync('/maps/'+mapId+'/'+t.url);texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());return texture;}));
+  if(data.skybox){const sky=await new THREE.CubeTextureLoader().loadAsync(data.skybox.map(f=>'/maps/'+mapId+'/'+f));sky.colorSpace=THREE.SRGBColorSpace;scene.background=sky;}
+  const collisionRoot=new THREE.Group();
+  for(const group of data.groups){
+   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(group.positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(group.uv,2));geometry.setAttribute('color',new THREE.Float32BufferAttribute(group.colors,3));geometry.computeVertexNormals();
+   const material=new THREE.MeshBasicMaterial({map:textures[group.texture],vertexColors:true,side:THREE.DoubleSide,alphaTest:data.textures[group.texture].masked?.5:0,transparent:group.opacity<1,opacity:group.opacity,toneMapped:false});
+   const mesh=new THREE.Mesh(geometry,material);mapRoot.add(mesh);
+   if(group.solid){mapMeshes.push(mesh);collisionRoot.add(new THREE.Mesh(geometry,material));}
+  }
+  mapRoot.updateMatrixWorld(true);collisionRoot.updateMatrixWorld(true);worldOctree=new Octree().fromGraphNode(collisionRoot);mapReady=true;placePlayer();for(let i=0;i<6;i++)addBot(i);
+  $('mapStatus').textContent='✓ '+mapName+' · Mapa carregado'+(data.missingTextures?.length?' · Algumas texturas usam materiais substitutos.':'');$('soloBtn').disabled=$('onlineBtn').disabled=false;
+ }catch(error){$('mapStatus').textContent='Não foi possível carregar o mapa. Recarregue a página. '+error.message;console.error(error);}finally{$('mapSelect').disabled=false;}
+}
+$('mapSelect').onchange=()=>{if(started)return;mapId=$('mapSelect').value;loadMap();};
+const viewWeapons=createWeapons(camera);scene.add(camera);
+camera.position.set(0,1.7,22);
+let health=100,armor=100,ammo=30,reserve=90,kills=0,deaths=0,started=false,online=false, socket=null, playerId=null, lastShot=0,reloading=false,elapsed=0;
+let trainingInventory={rifle:{ammo:30,reserve:90},pistol:{ammo:12,reserve:48}};
+let currentWeapon='rifle',matchState=null,selfState=null,spawnVersion=null,shopOpen=false,boardOpen=false,mouseHeld=false;
+let verticalSpeed=0,onGround=false,moveSendTimer=0,gameSession=0;
+const keys={};let yaw=0,pitch=0,velocity=new THREE.Vector3(),shotCooldown=.105;
+function addBot(i){if(!mapReady)return;const group=createOperator(i%4);group.position.copy(enemySpawn(spawnCursor++));Object.assign(group.userData,{hp:100,dir:Math.random()*6.28,think:0,fire:Math.random()*2,fall:0,name:'BOT-'+(i+1)});scene.add(group);bots.push(group);targets.push(group);}
+function setToast(t){$('toast').textContent=t;setTimeout(()=>{if($('toast').textContent===t)$('toast').textContent=''},1800)}
+function updateHUD(){$('health').textContent=health;$('armor').textContent=armor;$('ammo').textContent=currentWeapon==='knife'?'∞':ammo;$('reserve').textContent=currentWeapon==='knife'?'—':reserve;$('weaponName').textContent={rifle:'VX-9',pistol:'P-12',knife:'FACA TÁTICA'}[currentWeapon];if(!online)$('score').textContent=kills+' — '+deaths;viewWeapons.set(currentWeapon);}
+function canAct(){return started&&(!online||(socket?.connected&&matchState?.phase==='live'&&selfState?.alive));}
+function equip(w){if(!started)return;if(online){socket?.emit('equip',w);return;}if(currentWeapon!=='knife')trainingInventory[currentWeapon]={ammo,reserve};currentWeapon=w;reloading=false;ammo=trainingInventory[w]?.ammo||0;reserve=trainingInventory[w]?.reserve||0;updateHUD();}
+function shoot(){if(!canAct()||document.pointerLockElement!==renderer.domElement)return;const now=performance.now()/1000;const cooldown=currentWeapon==='knife'?.65:currentWeapon==='pistol'?.28:.11;if(now-lastShot<cooldown||reloading)return;if(currentWeapon!=='knife'&&ammo<=0){setToast('SEM MUNIÇÃO · PRESSIONE R');return;}lastShot=now;viewWeapons.fire();
+ if(online){socket.emit('shoot',{direction:camera.getWorldDirection(new THREE.Vector3()).toArray()});return;}
+ if(currentWeapon!=='knife')ammo--;updateHUD();const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(),camera);ray.far=currentWeapon==='knife'?2.2:140;const hits=ray.intersectObjects(targets,true);if(hits.length&&!occluded(camera.position,hits[0].point)){let o=hits[0].object;while(o.parent&&!targets.includes(o))o=o.parent;if(targets.includes(o)){o.userData.hp-=currentWeapon==='knife'?55:currentWeapon==='pistol'?28:34;if(o.userData.hp<=0){scene.remove(o);disposeOperator(o);targets.splice(targets.indexOf(o),1);bots.splice(bots.indexOf(o),1);kills++;setToast('ALVO ELIMINADO');const session=gameSession;setTimeout(()=>{if(session===gameSession&&!online)addBot(Math.floor(Math.random()*6));},2500);updateHUD();}showHit();}}
+}
+function showHit(){$('hit').style.opacity=1;setTimeout(()=>$('hit').style.opacity=0,100);}
+function reload(){if(!started||currentWeapon==='knife')return;if(online){socket?.emit('reload');return;}const size=currentWeapon==='pistol'?12:30;if(reloading||ammo===size||reserve<=0)return;reloading=true;const session=gameSession,w=currentWeapon;setToast('RECARREGANDO...');setTimeout(()=>{if(session!==gameSession||w!==currentWeapon)return;const n=Math.min(size-ammo,reserve);ammo+=n;reserve-=n;reloading=false;updateHUD();},1400);}
+function panel(){if(!online)return;const waiting=['waiting','finished'].includes(matchState?.phase);$('matchPanel').hidden=!(waiting||shopOpen||boardOpen);$('shop').hidden=!(shopOpen&&matchState?.phase==='buy');$('readyBtn').hidden=!waiting;}
+function toggleShop(){if(!online||matchState?.phase!=='buy')return;shopOpen=!shopOpen;panel();if(shopOpen)document.exitPointerLock?.();else renderer.domElement.requestPointerLock()?.catch(()=>{});}
+$('readyBtn').onclick=()=>socket?.emit('ready');$('buyRifle').onclick=()=>socket?.emit('buy','rifle');$('buyArmor').onclick=()=>socket?.emit('buy','armor');
+window.addEventListener('keydown',e=>{if(e.target.matches('input,select')||e.repeat)return;keys[e.code]=true;if(started&&['Space','Tab'].includes(e.code))e.preventDefault();if(e.code==='KeyR')reload();if(e.code==='Digit1')equip('rifle');if(e.code==='Digit2')equip('pistol');if(e.code==='Digit3')equip('knife');if(e.code==='KeyB')toggleShop();if(e.code==='Tab'){boardOpen=true;panel();}if(e.code==='Escape')document.exitPointerLock?.();});
+window.addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Tab'){boardOpen=false;panel();}});
+renderer.domElement.addEventListener('click',()=>{if(started&&!shopOpen)renderer.domElement.requestPointerLock()?.catch(()=>{});});
+renderer.domElement.addEventListener('mousedown',e=>{if(e.button===0){mouseHeld=true;shoot();}});window.addEventListener('mouseup',()=>mouseHeld=false);
+document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement){mouseHeld=false;Object.keys(keys).forEach(k=>keys[k]=false);}});
+window.addEventListener('mousemove',e=>{if(document.pointerLockElement===renderer.domElement){yaw-=e.movementX*.0022;pitch-=e.movementY*.0022;pitch=Math.max(-1.35,Math.min(1.35,pitch));camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);}});
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+function startGame(isOnline){if(!mapReady)return;online=isOnline;started=true;gameSession++;trainingInventory={rifle:{ammo:30,reserve:90},pistol:{ammo:12,reserve:48}};health=100;armor=100;reloading=false;currentWeapon='rifle';ammo=30;reserve=90;placePlayer();updateHUD();setMusicMode('game');unlockMusic();$('menu').style.display='none';$('hud').style.display='block';$('status').textContent=isOnline?'MULTIPLAYER · CONECTANDO':mapName.toUpperCase()+' · TREINO';
+ $('roundBanner').hidden=$('buyHint').hidden=!isOnline;
+ if(isOnline){for(const b of bots){scene.remove(b);disposeOperator(b);}bots.length=0;targets.length=0;connectOnline();}else{while(bots.length<6)addBot(bots.length);renderer.domElement.requestPointerLock()?.catch(()=>{});}}
+function returnToMenu(){started=false;online=false;gameSession++;mouseHeld=false;reloading=false;matchState=selfState=null;spawnVersion=null;shopOpen=boardOpen=false;Object.keys(keys).forEach(k=>keys[k]=false);if(socket){socket.disconnect();socket=null;}remotePlayers.forEach(r=>{scene.remove(r);disposeOperator(r);});remotePlayers.clear();if(document.pointerLockElement)document.exitPointerLock();$('hud').style.display='none';$('menu').style.display='flex';$('matchPanel').hidden=true;viewWeapons.root.visible=true;setMusicMode('menu');unlockMusic();}
+$('returnMenu').addEventListener('click',returnToMenu);
+function applyMatch(state){matchState=state;const p=state.players[playerId];if(!p)return;selfState=p;health=p.hp;armor=p.armor;currentWeapon=p.weapon;reloading=!!p.reloadAt;const inv=p.inventory[p.weapon];ammo=inv?.ammo||0;reserve=inv?.reserve||0;
+ if(spawnVersion!==p.spawn){spawnVersion=p.spawn;camera.position.set(p.x,p.y,p.z);yaw=p.yaw;pitch=0;camera.rotation.set(0,yaw,0,'YXZ');verticalSpeed=0;}
+ viewWeapons.root.visible=p.alive;updateHUD();$('score').textContent=state.scores.join(' — ');$('clock').textContent=Math.ceil(state.remaining/1000)+'s';$('status').textContent='ROUND '+state.round+' · VOCÊ: '+(p.team===0?'ALPHA':'BRAVO');$('roundBanner').textContent=!p.alive&&state.phase==='live'?'ELIMINADO · AGUARDE O PRÓXIMO ROUND':state.message;
+ $('roomLabel').textContent='SALA '+($('roomCode').value||'AMIGOS').toUpperCase()+' · '+mapName;$('credits').textContent=p.credits+' CRÉDITOS';$('roster').textContent=Object.values(state.players).map(q=>(q.team===0?'🟠 ':'🔵 ')+q.name+(q.id===playerId?' (você)':'')+' · '+q.kills+'/'+q.deaths+(q.ready?' ✓':'')+(!q.alive?' ☠':'')).join('\n');$('readyBtn').textContent=p.ready?'PRONTO ✓ · CANCELAR':'PRONTO';
+ $('buyRifle').disabled=p.credits<1600||!!p.inventory.rifle;$('buyArmor').disabled=p.credits<400||p.armor>0;
+ if(state.phase!=='buy')shopOpen=false;panel();
+ for(const [id,q]of Object.entries(state.players)){if(id===playerId)continue;let r=remotePlayers.get(id);if(!r){r=createOperator(Object.keys(state.players).indexOf(id)%4);setOperatorTeam(r,q.team);scene.add(r);remotePlayers.set(id,r);}setOperatorWeapon(r,q.weapon);r.visible=q.alive;r.position.set(q.x,q.y-1.65,q.z);r.rotation.y=q.yaw+Math.PI;}
+ for(const [id,r]of remotePlayers)if(!state.players[id]){scene.remove(r);disposeOperator(r);remotePlayers.delete(id);}
+}
+function connectOnline(){const url=$('serverUrl').value.trim()||location.origin;const session=gameSession;function connect(){if(!online||!started||session!==gameSession)return;socket=window.io(url);socket.on('connect',()=>{playerId=socket.id;spawnVersion=null;socket.emit('join',{name:$('playerName').value,room:$('roomCode').value,map:mapId});});socket.on('match',applyMatch);socket.on('correction',p=>{camera.position.set(p.x,p.y,p.z);verticalSpeed=0;});socket.on('shotResult',r=>{if(r.hit){showHit();setToast(r.killed?'ELIMINADO':r.head?'ACERTO NA CABEÇA':'ACERTO');}});socket.on('message',setToast);socket.on('rejected',m=>{returnToMenu();$('mapStatus').textContent=m;});socket.on('connect_error',()=>{$('status').textContent='FALHA NA CONEXÃO · VOLTE AO MENU';});socket.on('disconnect',()=>{matchState=null;selfState=null;$('status').textContent='DESCONECTADO · TENTANDO RECONECTAR';});}
+ if(window.io){connect();return;}const script=document.createElement('script');script.src=url.replace(/\/$/,'')+'/socket.io/socket.io.js';script.onload=connect;script.onerror=()=>{$('status').textContent='SERVIDOR NÃO ENCONTRADO · VOLTE AO MENU';};document.head.appendChild(script);}
+$('soloBtn').onclick=()=>startGame(false);$('onlineBtn').onclick=()=>startGame(true);
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);if(started){elapsed+=dt;if(!online)$('clock').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(Math.floor(elapsed%60)).padStart(2,'0');
+ const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));let dx=0,dz=0;const speed=(keys.ShiftLeft?8.2:5.2)*dt;if(keys.KeyW){dx+=forward.x*speed;dz+=forward.z*speed;}if(keys.KeyS){dx-=forward.x*speed;dz-=forward.z*speed;}if(keys.KeyA){dx-=right.x*speed;dz-=right.z*speed;}if(keys.KeyD){dx+=right.x*speed;dz+=right.z*speed;}if(dx&&dz){const length=Math.hypot(dx,dz);if(length>speed){dx*=speed/length;dz*=speed/length;}}
+ if(document.pointerLockElement!==renderer.domElement||!canAct()){dx=0;dz=0;}
+ if(canAct()&&keys.Space&&onGround&&document.pointerLockElement===renderer.domElement)verticalSpeed=6;
+ if(canAct()){verticalSpeed=Math.max(-20,verticalSpeed-18*dt);onGround=walk(camera.position,dx,dz,verticalSpeed*dt);if(onGround)verticalSpeed=0;}
+ if(!online&&camera.position.y<-80)placePlayer();
+ bots.forEach(b=>{
+  b.userData.think-=dt;b.userData.fire-=dt;
+  const eye=b.position.clone().add(new THREE.Vector3(0,1.65,0));const to=camera.position.clone().sub(eye),dist=to.length();
+  if(b.userData.think<=0){b.userData.dir=Math.atan2(to.x,to.z)+(Math.random()-.5)*1.8;b.userData.think=1+Math.random()*2;}
+  b.userData.fall=Math.max(-20,b.userData.fall-18*dt);const move=dist>5?dt*1.6:0;if(walk(eye,Math.sin(b.userData.dir)*move,Math.cos(b.userData.dir)*move,b.userData.fall*dt))b.userData.fall=0;
+  animateOperator(b,dt,move?1.6:0);b.position.copy(eye).sub(new THREE.Vector3(0,1.65,0));b.rotation.y=b.userData.dir;
+  if(b.position.y<-80){b.position.copy(enemySpawn());b.userData.fall=0;}
+  if(dist<22&&b.userData.fire<=0&&!occluded(eye,camera.position)){
+   b.userData.fire=1.3+Math.random()*1.5;
+   if(Math.random()<.23){if(armor>0)armor=Math.max(0,armor-8);else health=Math.max(0,health-10);
+    if(health<=0){health=100;armor=100;placePlayer();deaths++;setToast('VOCÊ FOI ELIMINADO');}updateHUD();}
+  }
+ });
+ moveSendTimer+=dt;if(online&&canAct()&&socket?.connected&&moveSendTimer>=.05){moveSendTimer=0;socket.emit('move',{x:camera.position.x,y:camera.position.y,z:camera.position.z,yaw});}
+
+ }
+ remotePlayers.forEach(r=>{const last=r.userData.lastPosition;const speed=last?r.position.distanceTo(last)/Math.max(dt,.001):0;animateOperator(r,dt,speed);r.userData.lastPosition=r.position.clone();});
+ if(mouseHeld&&currentWeapon==='rifle')shoot();viewWeapons.update(dt,started&&canAct()&&(keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD)?1:0,reloading);
+ renderer.render(scene,camera);}
+window.addEventListener('blur',()=>{mouseHeld=false;Object.keys(keys).forEach(k=>keys[k]=false);});
+const clock=new THREE.Clock();updateHUD();animate();loadMap();
+</script>
+</body></html>

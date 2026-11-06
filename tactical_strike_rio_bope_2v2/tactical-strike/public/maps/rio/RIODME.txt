@@ -1,0 +1,109 @@
+Rio de Janeiro (cs_rio) v.1.0
+a Half-Life map for the Counter-Strike mod
+
+
+====================
+==    PORTUGUES   ==
+====================
+(english info below)
+
+Autores
+-------
+Design, mapa e texturas por Roger Mataleone - mataleone@yahoo.com - ICQ 40297949
+Design e texturas por Joca Crocodilo - videcom@terra.com.br - ICQ 81864599
+Veja meus outros mapas em http://www.counter-strike.com.br/mataleone/
+
+Informacoes Sobre o Mapa
+------------------------
+Jogo                : Half-Life (http://www.valvesoftware.com/)
+Mod                 : Counter-Strike (http://www.counter-strike.net/)
+Nome do Mapa        : Rio de Janeiro (cs_rio)
+Tempo de Desenvolv. : 3 meses, trabalhando apenas 2 noites por semana
+Tempo de Compilacao : 8:20 horas numa Sun Sparc Ultra 1
+Editores usados     : Valve큦 WorldCraft 3.3 com ZHLT 2.5.1 & 2.3.1 (sun)
+Outros programas    : Adobe Photoshop 4.0 & 5.5, Valve큦 makels & qlumpy,
+                      WasabiSoft SkyPaint 1.10, WaveLenght Sprite Wizard 1.1
+
+Instalacao
+------------
+Deszipar todos os arquivos no eu diretorio Half-Life/cstrike.
+Se voce incluir este mapa no seu servidor, por favor nos avise para jogarmos ai!
+Nao ha jeito de espalhar nenhum tipo de virus virtual ou organico atraves dos
+arquivos de instalacao!
+
+Contato
+-------
+Qualquer comentario, sugestao, bug, ofertas, doacoes, ameacas, convites para
+festas ou seja la o que for, mande para mataleone@yahoo.com
+
+COPYRIGHT
+---------
+cs_rio tem copyright 2001. Voce pode distribuir este mapa contanto que nao haja
+modificacao nem omissao de nenhum arquivo. Por favor nos consulte antes de
+distribuir este arquivo em CDs ou outras midias.
+
+Por favor nao use este mapa ou suas texturas como base para construir outros
+mapas. Nao me peca os fontes que eu nao pretendo passar para ninguem! Eu nao
+pretendo modificar mais este mapa nem fazer uma continuacao, apenas se for
+necessario para correcao de problemas. Se voce quiser modificar ou fazer alguma
+continuacao, fale conosco que talvez possamos chegar a um acordo.
+
+Agradecimentos
+--------------
+Beavis, pelo Rap Proibido
+Mureta pelos beta-tests
+Galera da Zenkei, pela melhor LAN de Sao Paulo!
+
+Divirtam-se!
+
+
+
+
+
+====================
+==     ENGLISH    ==
+====================
+
+
+Authors
+-------
+Design, mapping & textures by Roger Mataleone - mataleone@yahoo.com - ICQ 40297949
+Design & textures by Joca Crocodilo - videcom@terra.com.br
+See my other maps at http://www.counter-strike.com.br/mataleone/
+
+Map Info
+--------
+Game          : Half-Life (http://www.valvesoftware.com/)
+Mod           : Counter-Strike (http://www.counter-strike.net/)
+Map name      : Rio de Janeiro (cs_rio)
+Mapping time  : 3 months, working just 2 nights a week
+Compile time  : 8:20 hours on a Sun Sparc Ultra 1
+Editor used   : Valve큦 WorldCraft 3.3 with ZHLT 2.5.1 & 2.3.1 (sun)
+Other Tools   : Adobe Photoshop 4.0 & 5.5, Valve큦 makels & qlumpy,
+                WasabiSoft SkyPaint 1.10, WaveLenght Sprite Wizard 1.1
+
+Installation
+------------
+Unzip all the files to your Half-Life/cstrike directory.
+For an english map briefing screen, remove the file cs_rio.txt and rename
+cs_riobeta_en.txt to cs_rio.txt.
+If you are including this map on your server mapcycle, please tell us so we can
+log in and teach you how to play!
+There큦 NO way of spreading any kid of computer or organic virus through these
+files!
+
+Feedback
+--------
+Any comments, suggestions, bug report, offers, donations, threats, blackmail,
+party invitations or whatever, please send to mataleone@yahoo.com
+
+COPYRIGHT INFORMATION
+---------------------
+cs_rio is copyright 2001. You may distribute this file freely with NO
+modifications and NO file omissions. Please ask my permission to distribute
+this file on commercial CDs or other medias.
+
+Authors MAY NOT use this level or the textures on this level as a base to build
+additional levels. If you want to modify ot or make a "continuation", please
+ask me and maybe we can reach an agreement.
+

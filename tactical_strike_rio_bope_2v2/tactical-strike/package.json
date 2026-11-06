@@ -1,0 +1,17 @@
+{
+  "name": "tactical-strike-web",
+  "version": "1.2.0",
+  "private": true,
+  "description": "FPS 3D com treino, MP3 local e multiplayer 2v2 por rounds",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test:map": "node tools/check_map.mjs",
+    "test": "node --test tests/*.cjs"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1",
+    "three": "^0.160.0"
+  }
+}
